@@ -1,0 +1,1436 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1920"
+   height="1080"
+   version="1.1"
+   id="svg156"
+   sodipodi:docname="backgroundaudioanalyser.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview156"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.8"
+     inkscape:cx="1e+03"
+     inkscape:cy="540"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg156" />
+  <!-- Fond -->
+  <rect
+     width="100%"
+     height="100%"
+     fill="#141428"
+     id="rect1" />
+  <!-- Dégradé -->
+  <defs
+     id="defs8">
+    <!-- Barres (32 bandes, contours blancs + couleur) -->
+<linearGradient id="spectrumGrad" x1="0" y1="1" x2="0" y2="0">
+  <stop offset="0%" stop-color="#141428"/>
+  <stop offset="100%" stop-color="#141428"/>
+</linearGradient>
+
+  </defs>
+  <g
+     id="bars">
+    <!-- largeur 22, espacement 40 (soit step = 40), y=192, height=800 -->
+    <!-- x = 120 + i*40 -->
+    <rect
+       x="120"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect8" />
+    <rect
+       x="160"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect9" />
+    <rect
+       x="200"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect10" />
+    <rect
+       x="240"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect11" />
+    <rect
+       x="280"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect12" />
+    <rect
+       x="320"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect13" />
+    <rect
+       x="360"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect14" />
+    <rect
+       x="400"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect15" />
+    <rect
+       x="440"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect16" />
+    <rect
+       x="480"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect17" />
+    <rect
+       x="520"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect18" />
+    <rect
+       x="560"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect19" />
+    <rect
+       x="600"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect20" />
+    <rect
+       x="640"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect21" />
+    <rect
+       x="680"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect22" />
+    <rect
+       x="720"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect23" />
+    <rect
+       x="760"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect24" />
+    <rect
+       x="800"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect25" />
+    <rect
+       x="840"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect26" />
+    <rect
+       x="880"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect27" />
+    <rect
+       x="920"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect28" />
+    <rect
+       x="960"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect29" />
+    <rect
+       x="1000"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect30" />
+    <rect
+       x="1040"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect31" />
+    <rect
+       x="1080"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect32" />
+    <rect
+       x="1120"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect33" />
+    <rect
+       x="1160"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect34" />
+    <rect
+       x="1200"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect35" />
+    <rect
+       x="1240"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect36" />
+    <rect
+       x="1280"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect37" />
+    <rect
+       x="1320"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect38" />
+  </g>
+  <g
+     id="spectre_cercles">
+    <circle
+       cx="131"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle38" />
+    <circle
+       cx="171"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle39" />
+    <circle
+       cx="211"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle40" />
+    <circle
+       cx="251"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle41" />
+    <circle
+       cx="291"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle42" />
+    <circle
+       cx="331"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle43" />
+    <circle
+       cx="371"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle44" />
+    <circle
+       cx="411"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle45" />
+    <circle
+       cx="451"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle46" />
+    <circle
+       cx="491"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle47" />
+    <circle
+       cx="531"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle48" />
+    <circle
+       cx="571"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle49" />
+    <circle
+       cx="611"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle50" />
+    <circle
+       cx="651"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle51" />
+    <circle
+       cx="691"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle52" />
+    <circle
+       cx="731"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle53" />
+    <circle
+       cx="771"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle54" />
+    <circle
+       cx="811"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle55" />
+    <circle
+       cx="851"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle56" />
+    <circle
+       cx="891"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle57" />
+    <circle
+       cx="931"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle58" />
+    <circle
+       cx="971"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle59" />
+    <circle
+       cx="1011"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle60" />
+    <circle
+       cx="1051"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle61" />
+    <circle
+       cx="1091"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle62" />
+    <circle
+       cx="1131"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle63" />
+    <circle
+       cx="1171"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle64" />
+    <circle
+       cx="1211"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle65" />
+    <circle
+       cx="1251"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle66" />
+    <circle
+       cx="1291"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle67" />
+    <circle
+       cx="1331"
+       cy="172"
+       r="11"
+       fill="#fff"
+       stroke="#000"
+       id="circle68" />
+  </g>
+  <!-- Echelle logarithmique dB, alignée au premier rectangle -->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="18px"
+     fill="#ffea80"
+     text-anchor="end"
+     id="g_dB_scale">
+    <line
+       x1="112"
+       y1="192"
+       x2="112"
+       y2="992"
+       stroke="#ffea80"
+       stroke-width="2"
+       id="line68" />
+    <text
+       x="107"
+       y="192"
+       alignment-baseline="middle"
+       id="text68">+6 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="192"
+       y2="192"
+       stroke="#ffea80"
+       id="line69" />
+    <text
+       x="107"
+       y="224"
+       alignment-baseline="middle"
+       id="text69">+3 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="224"
+       y2="224"
+       stroke="#ffea80"
+       id="line70" />
+    <text
+       x="107"
+       y="264"
+       alignment-baseline="middle"
+       id="text70">0 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="264"
+       y2="264"
+       stroke="#ffea80"
+       id="line71" />
+    <text
+       x="107"
+       y="308"
+       alignment-baseline="middle"
+       id="text71">–3 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="308"
+       y2="308"
+       stroke="#ffea80"
+       id="line72" />
+    <text
+       x="107"
+       y="392"
+       alignment-baseline="middle"
+       id="text72">–8 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="392"
+       y2="392"
+       stroke="#ffea80"
+       id="line73" />
+    <text
+       x="107"
+       y="496"
+       alignment-baseline="middle"
+       id="text73">–14 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="496"
+       y2="496"
+       stroke="#ffea80"
+       id="line74" />
+    <text
+       x="107"
+       y="560"
+       alignment-baseline="middle"
+       id="text74">–18 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="560"
+       y2="560"
+       stroke="#ffea80"
+       id="line75" />
+    <text
+       x="107"
+       y="592"
+       alignment-baseline="middle"
+       id="text75">–20 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="592"
+       y2="592"
+       stroke="#ffea80"
+       id="line76" />
+    <text
+       x="107"
+       y="752"
+       alignment-baseline="middle"
+       id="text76">–30 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="752"
+       y2="752"
+       stroke="#ffea80"
+       id="line77" />
+    <text
+       x="107"
+       y="888"
+       alignment-baseline="middle"
+       id="text77">–40 dB</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="888"
+       y2="888"
+       stroke="#ffea80"
+       id="line78" />
+    <text
+       x="107"
+       y="992"
+       alignment-baseline="middle"
+       id="text78">–∞</text>
+    <line
+       x1="112"
+       x2="120"
+       y1="992"
+       y2="992"
+       stroke="#ffea80"
+       id="line79" />
+  </g>
+  <!-- Echelle logarithmique dB, alignée au premier rectangle lignes-->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="18px"
+     fill="#ffea80"
+     text-anchor="end"
+     id="g91">
+    <!-- Axe principal -->
+    <line
+       x1="112"
+       y1="192"
+       x2="112"
+       y2="992"
+       stroke="#ffea80"
+       stroke-width="2"
+       id="line80" />
+    <!-- +6dB -->
+    <text
+       x="107"
+       y="192"
+       alignment-baseline="middle"
+       id="text80">+6 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="192"
+       y2="192"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line81" />
+    <!-- +3dB -->
+    <text
+       x="107"
+       y="224"
+       alignment-baseline="middle"
+       id="text81">+3 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="224"
+       y2="224"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line82" />
+    <!-- 0dB -->
+    <text
+       x="107"
+       y="264"
+       alignment-baseline="middle"
+       id="text82">0 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="264"
+       y2="264"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line83" />
+    <!-- –3dB -->
+    <text
+       x="107"
+       y="308"
+       alignment-baseline="middle"
+       id="text83">–3 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="308"
+       y2="308"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line84" />
+    <!-- –8dB -->
+    <text
+       x="107"
+       y="392"
+       alignment-baseline="middle"
+       id="text84">–8 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="392"
+       y2="392"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line85" />
+    <!-- –14dB -->
+    <text
+       x="107"
+       y="496"
+       alignment-baseline="middle"
+       id="text85">–14 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="496"
+       y2="496"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line86" />
+    <!-- –18dB -->
+    <text
+       x="107"
+       y="560"
+       alignment-baseline="middle"
+       id="text86">–18 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="560"
+       y2="560"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line87" />
+    <!-- –20dB -->
+    <text
+       x="107"
+       y="592"
+       alignment-baseline="middle"
+       id="text87">–20 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="592"
+       y2="592"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line88" />
+    <!-- –30dB -->
+    <text
+       x="107"
+       y="752"
+       alignment-baseline="middle"
+       id="text88">–30 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="752"
+       y2="752"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line89" />
+    <!-- –40dB -->
+    <text
+       x="107"
+       y="888"
+       alignment-baseline="middle"
+       id="text89">–40 dB</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="888"
+       y2="888"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line90" />
+    <!-- –∞ -->
+    <text
+       x="107"
+       y="992"
+       alignment-baseline="middle"
+       id="text90">–∞</text>
+    <line
+       x1="120"
+       x2="1342"
+       y1="992"
+       y2="992"
+       stroke="#ffea80"
+       stroke-dasharray="4,4"
+       id="line91" />
+  </g>
+  <!-- Labels de fréquences, alignement sur le 'z', rotation verticale -->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="18px"
+     fill="#f0f0f0"
+     text-anchor="end"
+     id="g121">
+    <text
+       x="137"
+       y="1000"
+       transform="rotate(-90,137,1000)"
+       id="text91">20Hz</text>
+    <text
+       x="177"
+       y="1000"
+       transform="rotate(-90,177,1000)"
+       id="text92">25Hz</text>
+    <text
+       x="217"
+       y="1000"
+       transform="rotate(-90,217,1000)"
+       id="text93">31.5Hz</text>
+    <text
+       x="257"
+       y="1000"
+       transform="rotate(-90,257,1000)"
+       id="text94">40Hz</text>
+    <text
+       x="297"
+       y="1000"
+       transform="rotate(-90,297,1000)"
+       id="text95">50Hz</text>
+    <text
+       x="337"
+       y="1000"
+       transform="rotate(-90,337,1000)"
+       id="text96">63Hz</text>
+    <text
+       x="377"
+       y="1000"
+       transform="rotate(-90,377,1000)"
+       id="text97">80Hz</text>
+    <text
+       x="417"
+       y="1000"
+       transform="rotate(-90,417,1000)"
+       id="text98">100Hz</text>
+    <text
+       x="457"
+       y="1000"
+       transform="rotate(-90,457,1000)"
+       id="text99">125Hz</text>
+    <text
+       x="497"
+       y="1000"
+       transform="rotate(-90,497,1000)"
+       id="text100">160Hz</text>
+    <text
+       x="537"
+       y="1000"
+       transform="rotate(-90,537,1000)"
+       id="text101">200Hz</text>
+    <text
+       x="577"
+       y="1000"
+       transform="rotate(-90,577,1000)"
+       id="text102">250Hz</text>
+    <text
+       x="617"
+       y="1000"
+       transform="rotate(-90,617,1000)"
+       id="text103">315Hz</text>
+    <text
+       x="657"
+       y="1000"
+       transform="rotate(-90,657,1000)"
+       id="text104">400Hz</text>
+    <text
+       x="697"
+       y="1000"
+       transform="rotate(-90,697,1000)"
+       id="text105">500Hz</text>
+    <text
+       x="737"
+       y="1000"
+       transform="rotate(-90,737,1000)"
+       id="text106">630Hz</text>
+    <text
+       x="777"
+       y="1000"
+       transform="rotate(-90,777,1000)"
+       id="text107">800Hz</text>
+    <text
+       x="817"
+       y="1000"
+       transform="rotate(-90,817,1000)"
+       id="text108">1kHz</text>
+    <text
+       x="857"
+       y="1000"
+       transform="rotate(-90,857,1000)"
+       id="text109">1.25kHz</text>
+    <text
+       x="897"
+       y="1000"
+       transform="rotate(-90,897,1000)"
+       id="text110">1.6kHz</text>
+    <text
+       x="937"
+       y="1000"
+       transform="rotate(-90,937,1000)"
+       id="text111">2kHz</text>
+    <text
+       x="977"
+       y="1000"
+       transform="rotate(-90,977,1000)"
+       id="text112">2.5kHz</text>
+    <text
+       x="1017"
+       y="1000"
+       transform="rotate(-90,1017,1000)"
+       id="text113">3.15kHz</text>
+    <text
+       x="1057"
+       y="1000"
+       transform="rotate(-90,1057,1000)"
+       id="text114">4kHz</text>
+    <text
+       x="1097"
+       y="1000"
+       transform="rotate(-90,1097,1000)"
+       id="text115">5kHz</text>
+    <text
+       x="1137"
+       y="1000"
+       transform="rotate(-90,1137,1000)"
+       id="text116">6.3kHz</text>
+    <text
+       x="1177"
+       y="1000"
+       transform="rotate(-90,1177,1000)"
+       id="text117">8kHz</text>
+    <text
+       x="1217"
+       y="1000"
+       transform="rotate(-90,1217,1000)"
+       id="text118">10kHz</text>
+    <text
+       x="1257"
+       y="1000"
+       transform="rotate(-90,1257,1000)"
+       id="text119">12.5kHz</text>
+    <text
+       x="1297"
+       y="1000"
+       transform="rotate(-90,1297,1000)"
+       id="text120">16kHz</text>
+    <text
+       x="1337"
+       y="1000"
+       transform="rotate(-90,1337,1000)"
+       id="text121">20kHz</text>
+  </g>
+  <!-- Barres LR -->
+  <!-- Barres LR -->
+  <defs
+     id="defs126">
+<linearGradient id="gradLeft" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="#141428"/>
+  <stop offset="100%" stop-color="#141428"/>
+</linearGradient>
+<linearGradient id="gradRight" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="#141428"/>
+  <stop offset="100%" stop-color="#141428"/>
+</linearGradient>
+  </defs>
+  <g
+     id="barsLR">
+    <!-- Rectangle L -->
+    <rect
+       x="1482"
+       y="192"
+       width="36"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect126" />
+    <!-- Rectangle S -->
+    <rect
+       x="1527"
+       y="192"
+       width="22"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect127" />
+    <!-- Rectangle R -->
+    <rect
+       x="1558"
+       y="192"
+       width="36"
+       height="800"
+       stroke="#fff"
+       fill="url(#spectrumGrad)"
+       id="rect128" />
+    <!-- Rectangle DIFF L -->
+    <rect
+       x="1482"
+       y="164"
+       width="56"
+       height="22"
+       fill="url(#gradLeft)"
+       stroke="#fff"
+       id="rect129" />
+    <!-- Rectangle DIFF R -->
+    <rect
+       x="1538"
+       y="164"
+       width="56"
+       height="22"
+       fill="url(#gradRight)"
+       stroke="#fff"
+       id="rect130" />
+  </g>
+  <!-- Labels Vumètre L/R -->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="66px"
+     fill="#fff"
+     text-anchor="middle"
+     id="g131">
+    <text
+       x="1500"
+       y="1050"
+       id="text130">L</text>
+    <text
+       x="1576"
+       y="1050"
+       id="text131">R</text>
+  </g>
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="36px"
+     fill="#fff"
+     text-anchor="middle"
+     id="g132">
+    <text
+       x="1538"
+       y="1030"
+       id="text132">S</text>
+  </g>
+  <!-- Echelle dB à gauche de L -->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="18px"
+     fill="#ffea80"
+     text-anchor="end"
+     id="g143">
+    <line
+       x1="1475"
+       y1="192"
+       x2="1475"
+       y2="992"
+       stroke="#ffea80"
+       stroke-width="2"
+       id="line132" />
+    <text
+       x="1470"
+       y="192"
+       alignment-baseline="middle"
+       id="text133">+6 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="192"
+       y2="192"
+       stroke="#ffea80"
+       id="line133" />
+    <text
+       x="1470"
+       y="224"
+       alignment-baseline="middle"
+       id="text134">+3 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="224"
+       y2="224"
+       stroke="#ffea80"
+       id="line134" />
+    <text
+       x="1470"
+       y="264"
+       alignment-baseline="middle"
+       id="text135">0 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="264"
+       y2="264"
+       stroke="#ffea80"
+       id="line135" />
+    <text
+       x="1470"
+       y="308"
+       alignment-baseline="middle"
+       id="text136">–3 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="308"
+       y2="308"
+       stroke="#ffea80"
+       id="line136" />
+    <text
+       x="1470"
+       y="392"
+       alignment-baseline="middle"
+       id="text137">–8 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="392"
+       y2="392"
+       stroke="#ffea80"
+       id="line137" />
+    <text
+       x="1470"
+       y="496"
+       alignment-baseline="middle"
+       id="text138">–14 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="496"
+       y2="496"
+       stroke="#ffea80"
+       id="line138" />
+    <text
+       x="1470"
+       y="560"
+       alignment-baseline="middle"
+       id="text139">–18 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="560"
+       y2="560"
+       stroke="#ffea80"
+       id="line139" />
+    <text
+       x="1470"
+       y="592"
+       alignment-baseline="middle"
+       id="text140">–20 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="592"
+       y2="592"
+       stroke="#ffea80"
+       id="line140" />
+    <text
+       x="1470"
+       y="752"
+       alignment-baseline="middle"
+       id="text141">–30 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="752"
+       y2="752"
+       stroke="#ffea80"
+       id="line141" />
+    <text
+       x="1470"
+       y="888"
+       alignment-baseline="middle"
+       id="text142">–40 dB</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="888"
+       y2="888"
+       stroke="#ffea80"
+       id="line142" />
+    <text
+       x="1470"
+       y="992"
+       alignment-baseline="middle"
+       id="text143">–∞</text>
+    <line
+       x1="1475"
+       x2="1483"
+       y1="992"
+       y2="992"
+       stroke="#ffea80"
+       id="line143" />
+  </g>
+  <!-- Echelle dB à droite de R -->
+  <g
+     font-family="'DejaVu Sans Mono'"
+     font-size="18px"
+     fill="#ffea80"
+     text-anchor="start"
+     id="g155">
+    <line
+       x1="1601"
+       y1="192"
+       x2="1601"
+       y2="992"
+       stroke="#ffea80"
+       stroke-width="2"
+       id="line144" />
+    <text
+       x="1606"
+       y="192"
+       alignment-baseline="middle"
+       id="text144">+6 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="192"
+       y2="192"
+       stroke="#ffea80"
+       id="line145" />
+    <text
+       x="1606"
+       y="224"
+       alignment-baseline="middle"
+       id="text145">+3 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="224"
+       y2="224"
+       stroke="#ffea80"
+       id="line146" />
+    <text
+       x="1606"
+       y="264"
+       alignment-baseline="middle"
+       id="text146">0 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="264"
+       y2="264"
+       stroke="#ffea80"
+       id="line147" />
+    <text
+       x="1606"
+       y="308"
+       alignment-baseline="middle"
+       id="text147">–3 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="308"
+       y2="308"
+       stroke="#ffea80"
+       id="line148" />
+    <text
+       x="1606"
+       y="392"
+       alignment-baseline="middle"
+       id="text148">–8 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="392"
+       y2="392"
+       stroke="#ffea80"
+       id="line149" />
+    <text
+       x="1606"
+       y="496"
+       alignment-baseline="middle"
+       id="text149">–14 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="496"
+       y2="496"
+       stroke="#ffea80"
+       id="line150" />
+    <text
+       x="1606"
+       y="560"
+       alignment-baseline="middle"
+       id="text150">–18 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="560"
+       y2="560"
+       stroke="#ffea80"
+       id="line151" />
+    <text
+       x="1606"
+       y="592"
+       alignment-baseline="middle"
+       id="text151">–20 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="592"
+       y2="592"
+       stroke="#ffea80"
+       id="line152" />
+    <text
+       x="1606"
+       y="752"
+       alignment-baseline="middle"
+       id="text152">–30 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="752"
+       y2="752"
+       stroke="#ffea80"
+       id="line153" />
+    <text
+       x="1606"
+       y="888"
+       alignment-baseline="middle"
+       id="text153">–40 dB</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="888"
+       y2="888"
+       stroke="#ffea80"
+       id="line154" />
+    <text
+       x="1606"
+       y="992"
+       alignment-baseline="middle"
+       id="text154">–∞</text>
+    <line
+       x1="1601"
+       x2="1593"
+       y1="992"
+       y2="992"
+       stroke="#ffea80"
+       id="line155" />
+  </g>
+  <filter
+     id="textShadow"
+     x="3.4694469519536142e-18"
+     y="-3.4694469519536142e-18"
+     width="1.0600000000000001"
+     height="1.2000000000000002"
+     inkscape:auto-region="false">
+    <feOffset
+       result="offOut"
+       dx="5"
+       dy="5"
+       id="feOffset155"
+       preserveAlpha="false" />
+    <feGaussianBlur
+       result="blurOut"
+       in="offOut"
+       stdDeviation="4"
+       id="feGaussianBlur155" />
+    <feFlood
+       flood-color="#00ffe7"
+       flood-opacity="0.7"
+       result="flood"
+       id="feFlood155" />
+    <feComposite
+       in="flood"
+       in2="blurOut"
+       operator="in"
+       result="shadow"
+       id="feComposite155" />
+    <feComposite
+       in="SourceGraphic"
+       in2="shadow"
+       operator="over"
+       id="feComposite156" />
+  </filter>
+  <text
+     x="380"
+     y="100"
+     width="400"
+     height="200"
+     font-size="90px"
+     text-anchor="middle"
+     font-family="'DejaVu Sans Mono', 'Consolas', 'Menlo', 'monospace'"
+     fill="#fff"
+     letter-spacing="6"
+     font-weight="bold"
+     filter="url(#textShadow)"
+     id="text156">
+  VibeScope
+</text>
+</svg>
