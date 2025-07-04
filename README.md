@@ -15,7 +15,7 @@ cd audio-analyser
 
 # Linux
 make                     # produit ./audio_analyser
-
+```
 ---
 
 ## Lancer l’application
