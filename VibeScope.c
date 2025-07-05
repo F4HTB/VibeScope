@@ -9,12 +9,15 @@
 #include <pthread.h>
 #include <fftw3.h>
 #include <stdbool.h>
+#include <string.h>
+#include <unistd.h>
 
 // ====== Définitions des constantes ======
 #define NUM_COLS 31
 #define LR_BAR_Y   192
 #define LR_BAR_H   800
 #define FFT_SIZE 16384
+#define FFT_SIZE_b2 ((FFT_SIZE/2)+1)
 #define HOP_SIZE 1024
 #define AUDIO_BUFFER_SIZE HOP_SIZE
 
@@ -57,6 +60,8 @@ bool calibrate_vu = 0;  // Flag calibration vumètre
 // ====== Variables globales pour audio et FFT ======
 float hann_window[FFT_SIZE];
 fftwf_plan fft_plan;
+float FFT_in[FFT_SIZE];
+fftwf_complex FFT_out[FFT_SIZE_b2];
 
 volatile sig_atomic_t running = 1;
 
@@ -69,6 +74,12 @@ pthread_cond_t fft_cond = PTHREAD_COND_INITIALIZER;
 volatile int new_block_ready = 0;
 
 float col_values[NUM_COLS] = {0.0f};  // Valeurs niveaux par bande FFT
+float spectro_peak_hold[NUM_COLS] = {0};
+
+// Constantes de temps en secondes
+float tau_peak_hold = 2.0f; //persistance des pics
+float tau_rms = 0.1f;          // 100 ms RMS
+float tau_peak_release = 0.3f; // 300 ms Peak relâchement
 
 // Positions et dimensions des barres du spectrogramme
 const int bar_x[NUM_COLS] = {
@@ -95,6 +106,7 @@ Color gradientStops[8] = {
     {0, 0, 0},      {0, 0, 128},    {0, 0, 255},    {0, 128, 0},
     {0, 255, 0},    {255, 255, 0},  {255, 128, 0},  {255, 0, 0}
 };
+static SDL_Texture *gradTex = NULL;
 
 Color gradientLUT[800]; // LUT de dégradé verticale pour barres (hauteur = 800)
 
@@ -231,6 +243,39 @@ int db_to_y(float db) {
 
 // -- Dessine les barres du spectrogramme --
 void draw_spectrogram_bars(SDL_Renderer *ren, const float *col_values) {
+    // Static pour garder les valeurs de peak hold du spectro
+    static float draw_spectro_peak_hold[NUM_COLS] = {0};
+    static int first_call = 1;
+
+    // On met à jour draw_spectro_peak_hold avec col_values ici
+    // (Attention, dans fft_thread_func on a aussi un peak hold, donc ici on synchronise avec celui-là)
+    // Pour la simplicité, on met à jour ici aussi avec un lissage léger (ou copier le tableau depuis fft_thread_func si possible)
+
+    if (first_call) {
+        // Initialisation à la première passe
+        for (int i = 0; i < NUM_COLS; i++) {
+            draw_spectro_peak_hold[i] = col_values[i];
+        }
+        first_call = 0;
+    } else {
+        float cur_time = SDL_GetTicks() * 0.001f;
+        static float last_update_time = 0.0f;
+        float dt = cur_time - last_update_time;
+        if (dt <= 0.0f) dt = 0.001f;
+        float alpha_decay = 1.0f - expf(-dt / tau_peak_hold);
+
+        for (int i = 0; i < NUM_COLS; i++) {
+            if (col_values[i] > draw_spectro_peak_hold[i]) {
+                draw_spectro_peak_hold[i] = col_values[i];
+            } else {
+                draw_spectro_peak_hold[i] = (1 - alpha_decay) * draw_spectro_peak_hold[i] + alpha_decay * col_values[i];
+                if (draw_spectro_peak_hold[i] < col_values[i])
+                    draw_spectro_peak_hold[i] = col_values[i];
+            }
+        }
+        last_update_time = cur_time;
+    }
+
     for (int i = 0; i < NUM_COLS; ++i) {
         SDL_Rect rc = {bar_x[i], bar_y, bar_w, bar_h};
         SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
@@ -240,15 +285,27 @@ void draw_spectrogram_bars(SDL_Renderer *ren, const float *col_values) {
         int y_bottom = bar_y + bar_h - 1;
 
         // Remplissage du bas vers le haut jusqu'à y_head
-        for (int y = y_head; y <= y_bottom; ++y) {
-            int rel = y - bar_y;
-            if (rel < 0) rel = 0;
-            if (rel >= bar_h) rel = bar_h - 1;
-            Color col = gradientLUT[bar_h - 1 - rel];  // inversion LUT
-            SDL_SetRenderDrawColor(ren, col.r, col.g, col.b, 255);
-            SDL_Rect seg = {bar_x[i] + 1, y, bar_w - 2, 1};
-            SDL_RenderFillRect(ren, &seg);
-        }
+        int filled_h = (bar_y + bar_h) - y_head;     // hauteur à remplir
+        if (filled_h > 0) {
+		SDL_Rect src = {0, 0, 1, filled_h};                   // on prend le haut (0…filled_h-1)
+		SDL_Rect dst = {bar_x[i] + 1, y_head, bar_w - 2, filled_h};
+		SDL_RenderCopyEx(ren,          // même coût qu’un RenderCopy
+						 gradTex,
+						 &src,
+						 &dst,
+						 0.0,          // pas de rotation
+						 NULL,
+						 SDL_FLIP_VERTICAL);   // ← inverse l’axe Y
+		}
+
+        // Ligne du peak hold (petit trait blanc semi-transparent)
+        int y_peak = db_to_y(draw_spectro_peak_hold[i]);
+        if (y_peak < bar_y) y_peak = bar_y;
+        if (y_peak > y_bottom) y_peak = y_bottom;
+
+        SDL_SetRenderDrawColor(ren, 255, 255, 255, 180);
+        SDL_Rect peak_rect = {bar_x[i] + 2, y_peak, bar_w - 4, 2};
+        SDL_RenderFillRect(ren, &peak_rect);
 
         // Cercles indicateurs de niveau
         Uint8 r, g, b;
@@ -259,6 +316,7 @@ void draw_spectrogram_bars(SDL_Renderer *ren, const float *col_values) {
         drawFilledCircle(ren, cx, cy, circle_radius, r, g, b, 255);
     }
 }
+
 
 // -- Calcul hauteur remplie pour barres RMS ou Peak (en pixels) --
 int calc_filled_height(float val) {
@@ -278,39 +336,47 @@ int calc_filled_height(float val) {
 }
 
 // -- Dessine les barres RMS (opaque) et Peak (semi-transparent) pour L, S, R --
-void draw_lr_bars(SDL_Renderer *ren, const float *rms_values, const float *peak_values) {
+/* === draw_lr_bars : version identique au spectro === */
+void draw_lr_bars(SDL_Renderer *ren,
+                  const float *rms_values,
+                  const float *peak_values)
+{
     for (int i = 0; i < 3; ++i) {
-        SDL_Rect rc = {lr_bar_x[i], LR_BAR_Y, lr_bar_w[i], LR_BAR_H};
+        /* Cadre blanc */
+        SDL_Rect rc = { lr_bar_x[i], LR_BAR_Y, lr_bar_w[i], LR_BAR_H };
         SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
         SDL_RenderDrawRect(ren, &rc);
 
-        // Dessiner RMS opaque
-        int filled_h_rms = calc_filled_height(rms_values[i]);
-        for (int dy = 0; dy < filled_h_rms; ++dy) {
-            float val = (float)dy / (LR_BAR_H - 1);
-            Color col = getGradientColor(val);
-            SDL_SetRenderDrawColor(ren, col.r, col.g, col.b, 255);
-            SDL_Rect seg = {lr_bar_x[i] + 1, LR_BAR_Y + LR_BAR_H - dy - 1, lr_bar_w[i] - 2, 1};
-            SDL_RenderFillRect(ren, &seg);
+        /* ------------------ RMS plein ------------------ */
+        int filled = calc_filled_height(rms_values[i]);
+        if (filled) {
+            SDL_Rect src = { 0, 0, 1, filled };           /* bas de la texture */
+            SDL_Rect dst = { lr_bar_x[i] + 1,
+                             LR_BAR_Y + LR_BAR_H - filled,
+                             lr_bar_w[i] - 2,
+                             filled };
+            SDL_SetTextureAlphaMod(gradTex, 255);          /* opaque */
+            SDL_RenderCopyEx(ren, gradTex, &src, &dst,
+                             0.0, NULL, SDL_FLIP_VERTICAL); /* noir en bas */
         }
 
-        // Activer le blending pour Peak semi-transparent
-        SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
-
-        // Dessiner Peak semi-transparent (alpha=128)
-        int filled_h_peak = calc_filled_height(peak_values[i]);
-        for (int dy = 0; dy < filled_h_peak; ++dy) {
-            float val = (float)dy / (LR_BAR_H - 1);
-            Color col = getGradientColor(val);
-            SDL_SetRenderDrawColor(ren, col.r, col.g, col.b, 128);
-            SDL_Rect seg = {lr_bar_x[i] + 1, LR_BAR_Y + LR_BAR_H - dy - 1, lr_bar_w[i] - 2, 1};
-            SDL_RenderFillRect(ren, &seg);
+        /* ------------------ Peak semi-transparent ------------------ */
+        int filled_peak = calc_filled_height(peak_values[i]);
+        if (filled_peak) {
+            SDL_Rect src = { 0, 0, 1, filled_peak };
+            SDL_Rect dst = { lr_bar_x[i] + 1,
+                             LR_BAR_Y + LR_BAR_H - filled_peak,
+                             lr_bar_w[i] - 2,
+                             filled_peak };
+            SDL_SetTextureAlphaMod(gradTex, 128);          /* 50 % */
+            SDL_RenderCopyEx(ren, gradTex, &src, &dst,
+                             0.0, NULL, SDL_FLIP_VERTICAL);
         }
-
-        // Désactiver blending après dessin
-        SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
     }
+    /* Remise de l’opacité pour la suite (spectrogramme) */
+    SDL_SetTextureAlphaMod(gradTex, 255);
 }
+
 
 // -- Dessine la barre de balance L/R avec dégradé coloré --
 void draw_balance_bar(SDL_Renderer *ren, float value) {
@@ -350,12 +416,35 @@ void init_hann_window() {
 }
 
 // -- Initialisation du LUT dégradé vertical --
-void init_gradientLUT() {
+// --- Création du LUT EN MÉMOIRE + texture GPU en même temps ---
+void init_gradient_texture(SDL_Renderer *ren)
+{
+    // 1. Surface RGBA 1 x bar_h
+    SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
+        0, 1, bar_h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (!surf) {
+        fprintf(stderr, "SDL_CreateRGBSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    Uint32 *pix = (Uint32 *)surf->pixels;
     for (int dy = 0; dy < bar_h; ++dy) {
         float val = (float)dy / (bar_h - 1);
-        gradientLUT[dy] = getGradientColor(val);
+        Color c = getGradientColor(val);          // ta table 8 couleurs
+        pix[dy] = SDL_MapRGBA(surf->format, c.r, c.g, c.b, 255);
+        gradientLUT[dy] = c;                      // ← garde aussi le LUT si d’autres fonctions l’utilisent
     }
+
+    // 2. Texture GPU
+    gradTex = SDL_CreateTextureFromSurface(ren, surf);
+    SDL_FreeSurface(surf);
+    if (!gradTex) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetTextureBlendMode(gradTex, SDL_BLENDMODE_BLEND);  // autorise alpha pour le peak
 }
+
 
 // -- Initialisation ALSA capture (input audio) --
 snd_pcm_t *init_alsa_capture(const char *device) {
@@ -496,10 +585,6 @@ void update_audio_levels(snd_pcm_t *handle, float *lr_values, float *balance_val
         }
     }
 
-    // Constantes de temps en secondes
-    const float tau_rms = 0.1f;          // 100 ms RMS
-    const float tau_peak_release = 0.3f; // 300 ms Peak relâchement
-
     // Calcul alpha
     float alpha_rms = 1.0f - expf(-dt / tau_rms);
 
@@ -583,13 +668,18 @@ void update_audio_levels(snd_pcm_t *handle, float *lr_values, float *balance_val
 
 // -- Thread FFT : calcul de la FFT et calibration spectre --
 void* fft_thread_func(void *arg) {
-    fftwf_complex out[FFT_SIZE];
-    float in[FFT_SIZE];
     short block_stereo[FFT_SIZE * 2];
 
     static int last_band = -1;
     static float last_time = 0.0f;
     static int already_calibrated = -1;
+
+    // Tableau pour stocker le peak hold (persistance des pics)
+    static float spectro_peak_hold[NUM_COLS] = {0};
+
+    // Temps de décroissance du peak hold en secondes (ex : 1 seconde)
+    
+    static float last_peak_update_time = 0.0f;
 
     while (running) {
         pthread_mutex_lock(&fft_mutex);
@@ -607,14 +697,13 @@ void* fft_thread_func(void *arg) {
         for (int i = 0; i < FFT_SIZE; i++) {
             float L = block_stereo[2*i] / 32768.0f;
             float R = block_stereo[2*i+1] / 32768.0f;
-            in[i] = 0.5f * (L + R) * hann_window[i];
+            FFT_in[i] = 0.5f * (L + R) * hann_window[i];
         }
 
-        fftwf_execute_dft_r2c(fft_plan, in, out);
+        fftwf_execute_dft_r2c(fft_plan, FFT_in, FFT_out);
 
-        float mag[FFT_SIZE / 2];
-        for (int i = 0; i < FFT_SIZE / 2; i++)
-            mag[i] = hypotf(out[i][0], out[i][1]);
+        static float mag[FFT_SIZE_b2];
+        for (int i = 0; i < FFT_SIZE_b2; i++)mag[i] = hypotf(FFT_out[i][0], FFT_out[i][1]);
 
         // Calcul niveaux moyens par bande de fréquence
         for (int c = 0; c < NUM_COLS; c++) {
@@ -625,11 +714,11 @@ void* fft_thread_func(void *arg) {
             int bin_end   = (int)floorf(f_high / freq_per_bin);
 
             if (bin_start < 0) bin_start = 0;
-            if (bin_end > FFT_SIZE/2) bin_end = FFT_SIZE/2;
+            if (bin_end > FFT_SIZE_b2) bin_end = FFT_SIZE_b2;
 
             float sum = 0.0f;
-            int n_bins = bin_end - bin_start;
-            for (int i = bin_start; i < bin_end; i++) sum += mag[i];
+			int n_bins = bin_end - bin_start + 1;
+			for (int i = bin_start; i <= bin_end; i++) sum += mag[i];
             float avg = (n_bins > 0) ? (sum / n_bins) : 1e-20f;
 
             float avg_norm = avg / ref_val[c];
@@ -637,9 +726,27 @@ void* fft_thread_func(void *arg) {
             col_values[c] = db;
         }
 
+        // Mise à jour peak hold (persistance pics)
+        float cur_time = SDL_GetTicks() * 0.001f; // secondes
+        float dt = cur_time - last_peak_update_time;
+        if (dt <= 0.0f) dt = 0.001f;
+        float alpha_decay = 1.0f - expf(-dt / tau_peak_hold);
+
+        for (int c = 0; c < NUM_COLS; c++) {
+            if (col_values[c] > spectro_peak_hold[c]) {
+                spectro_peak_hold[c] = col_values[c]; // nouveau pic max
+            } else {
+                spectro_peak_hold[c] = (1 - alpha_decay) * spectro_peak_hold[c] + alpha_decay * col_values[c];
+                // éviter que le pic descende en dessous du niveau actuel
+                if (spectro_peak_hold[c] < col_values[c])
+                    spectro_peak_hold[c] = col_values[c];
+            }
+        }
+        last_peak_update_time = cur_time;
+
         // Calibration spectrogramme simplifiée (1s stable sur la même bande)
         if (calibrate_spectro) {
-            float cur_time = SDL_GetTicks() * 0.001f; // secondes
+            // Réutiliser cur_time défini ci-dessus
 
             // Trouver la bande la plus forte
             int best_band = -1;
@@ -667,8 +774,8 @@ void* fft_thread_func(void *arg) {
                 int bin_start = (int)ceilf(f_low / freq_per_bin);
                 int bin_end   = (int)floorf(f_high / freq_per_bin);
                 float sum = 0.0f;
-                int n_bins = bin_end - bin_start;
-                for (int i = bin_start; i < bin_end; i++) sum += mag[i];
+                int n_bins = bin_end - bin_start + 1;
+                for (int i = bin_start; i <= bin_end; i++) sum += mag[i];
                 float avg = (n_bins > 0) ? (sum / n_bins) : 1e-20f;
 
                 printf("[CALIB] Bande %d (%.1f Hz) : ref_val[%d] = %.2f (avant: %.2f)\n",
@@ -692,6 +799,7 @@ void* fft_thread_func(void *arg) {
     return NULL;
 }
 
+
 // -- Sauvegarde des calibrations dans cal.msr --
 void save_calibration_file() {
     FILE *f = fopen("cal.msr", "w");
@@ -711,6 +819,41 @@ void save_calibration_file() {
 
     fclose(f);
 }
+
+fftwf_plan create_fftwf_plan_with_wisdom(int size, float* FFT_in, fftwf_complex* FFT_out) {
+    fftwf_plan plan = NULL;
+    const char* wisdom_filename = "wisdom.fftw";
+    int wisdom_loaded = 0;
+    // Tente de charger le wisdom
+    FILE *wisdom_file = fopen(wisdom_filename, "r");
+    if (wisdom_file) {
+        fclose(wisdom_file);
+        wisdom_loaded = fftwf_import_wisdom_from_filename(wisdom_filename);
+        if (wisdom_loaded) {
+            printf("[FFTW] Wisdom chargé depuis '%s'.\n", wisdom_filename);
+        } else {
+            printf("[FFTW] Fichier wisdom présent, mais échec du chargement. Il sera recalculé.\n");
+        }
+    } else {
+        printf("[FFTW] Pas de wisdom détecté, création initiale...\n");
+    }
+    // Création du plan (toujours avec MEASURE pour garantir l'optimum)
+    plan = fftwf_plan_dft_r2c_1d(size, FFT_in, FFT_out, FFTW_MEASURE);
+    if (!plan) {
+        fprintf(stderr, "[FFTW] Erreur : impossible de créer le plan FFTW !\n");
+        exit(1);
+    }
+    // Si wisdom pas chargé, le sauver pour la prochaine fois
+    if (!wisdom_loaded) {
+        if (fftwf_export_wisdom_to_filename(wisdom_filename)) {
+            printf("[FFTW] Wisdom sauvegardé dans '%s'.\n", wisdom_filename);
+        } else {
+            fprintf(stderr, "[FFTW] Erreur à la sauvegarde du wisdom !\n");
+        }
+    }
+    return plan;
+}
+
 
 // -- Chargement des calibrations depuis cal.msr --
 int load_calibration_file() {
@@ -764,28 +907,46 @@ int load_calibration_file() {
     return 0;
 }
 
+void print_help(const char *progname) {
+    printf("Usage: %s [options]\n", progname);
+    printf("Options:\n");
+    printf("  -D <device>           : ALSA audio capture device (default: 'default')\n");
+    printf("  -CS                   : Active calibration spectrogram\nUse:\nfreqs=(20 25 31.5 40 50 63 80 100 125 160 200 250 315 400 500 630 800 1000 1250 1600 2000 2500 3150 4000 5000 6300 8000 10000 12500 16000 20000)\nfor f in \"${freqs[@]}\"; do\nsox -n -c 2 -t alsa plughw:CARD=loopTest1,DEV=1 synth 5 sine $f vol 0dB\ndone");
+    printf("  -CV                   : Enable VU meter calibration\nUse:\nsox -n -t alsa -b 16 -e signed-integer -c 2 plughw:CARD=loopTest1,DEV=1 synth 60 sine 1000 vol 0dB\n");
+    printf("  -PT <tau_peak_hold>   : Spectrogram peak persistence time (seconds, default: 2.0)\n");
+    printf("  -TR <tau_rms>         : RMS smoothing time constant (seconds, default: 0.1)\n");
+    printf("  -TP <tau_peak_release>: Peak release time constant (seconds, default: 0.3)\n");
+    printf("  -h, --help            : Show this help\n");
+}
+
 // ====== Fonction principale ======
 int main(int argc, char *argv[]) {
 
     const char *alsa_device = "default";
 
     // Lecture arguments ligne de commande
-    for (int i = 1; i < argc - 1; ++i) {
-        if (strcmp(argv[i], "-D") == 0) {
-            alsa_device = argv[i+1];
-            break;
-        }
-        if (strcmp(argv[i], "-CS") == 0) {
-            calibrate_spectro = 1;
-        }
-        if (strcmp(argv[i], "-CV") == 0) {
-            calibrate_vu = 1;
-        }
-    }
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-D") == 0 && i + 1 < argc) {
+			alsa_device = argv[i+1];
+			i++;
+		}
+		else if (strcmp(argv[i], "-CS") == 0) {
+			calibrate_spectro = 1;
+		}
+		else if (strcmp(argv[i], "-CV") == 0) {
+			calibrate_vu = 1;
+		}
+		else if (strcmp(argv[i], "-PT") == 0 && i + 1 < argc) {
+			tau_peak_hold = atof(argv[i+1]);
+			if (tau_peak_hold < 0.1f) tau_peak_hold = 0.1f; // sécurité
+			i++;
+		}
+	}
 
-    fft_plan = fftwf_plan_dft_r2c_1d(FFT_SIZE, NULL, NULL, FFTW_ESTIMATE);
+	
+    fft_plan = create_fftwf_plan_with_wisdom(FFT_SIZE, FFT_in, FFT_out);
     init_hann_window();
-    init_gradientLUT();
+    
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -803,6 +964,7 @@ int main(int argc, char *argv[]) {
         1920, 1080, SDL_WINDOW_SHOWN);
     SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+	init_gradient_texture(ren);
 
     SDL_Texture *bg = loadPngFromMemory(ren);
     if (!bg) {
