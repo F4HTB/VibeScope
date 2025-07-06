@@ -1,29 +1,33 @@
-# Audio Analyser – Visualiseur temps-réel en SDL2
+# VibeScope – Real-Time Audio Analyzer & Visualizer
 
-Un programme qui affiche, en plein-écran, un **spectrogramme 31 bandes**, trois barres *L / S / R* et un indicateur de balance stéréo.
+A full-screen audio visualizer that brings together :
+
+- **31-band Spectrogram** (RTA, studio analyzer style)
+- **Stereo bargraphs** L / S / R (RMS & Peak)
+- **VU-meters “Left / Right / Sum”**, balance indicator
+- **Oscilloscopes** for each channel
+- **Phase/correlation analysis**
+- All in real-time!
 
 ---
 
-## Compilation
+<p align="center">
+  <img src="screenshot.png" width="800" alt="Audio Analyser Preview"/>
+</p>
 
-### Méthode rapide (Makefile)
+---
+
+## Building
+
+### Quick method (Makefile)
 
 ```bash
 # Clone
 git clone https://github.com/<user>/audio-analyser.git
 cd audio-analyser
 
-# Linux
-make                     # produit ./audio_analyser
+# Build
+make  
 ```
----
-
-## Lancer l’application
-
-```bash
-./audio_analyser      # ou audio_analyser.exe
-```
-
----
-
-*Feel free to fork, hack, and share!*
+                   
+Feel free to fork, hack, and share!

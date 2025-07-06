@@ -572,7 +572,7 @@
        x="107"
        y="308"
        alignment-baseline="middle"
-       id="text71">–3 dB</text>
+       id="text71">-3 dB</text>
     <line
        x1="112"
        x2="120"
@@ -584,7 +584,7 @@
        x="107"
        y="392"
        alignment-baseline="middle"
-       id="text72">–8 dB</text>
+       id="text72">-8 dB</text>
     <line
        x1="112"
        x2="120"
@@ -596,7 +596,7 @@
        x="107"
        y="496"
        alignment-baseline="middle"
-       id="text73">–14 dB</text>
+       id="text73">-14 dB</text>
     <line
        x1="112"
        x2="120"
@@ -608,7 +608,7 @@
        x="107"
        y="560"
        alignment-baseline="middle"
-       id="text74">–18 dB</text>
+       id="text74">-18 dB</text>
     <line
        x1="112"
        x2="120"
@@ -620,7 +620,7 @@
        x="107"
        y="592"
        alignment-baseline="middle"
-       id="text75">–20 dB</text>
+       id="text75">-20 dB</text>
     <line
        x1="112"
        x2="120"
@@ -632,7 +632,7 @@
        x="107"
        y="752"
        alignment-baseline="middle"
-       id="text76">–30 dB</text>
+       id="text76">-30 dB</text>
     <line
        x1="112"
        x2="120"
@@ -644,7 +644,7 @@
        x="107"
        y="888"
        alignment-baseline="middle"
-       id="text77">–40 dB</text>
+       id="text77">-40 dB</text>
     <line
        x1="112"
        x2="120"
@@ -656,7 +656,7 @@
        x="107"
        y="992"
        alignment-baseline="middle"
-       id="text78">–∞</text>
+       id="text78">-∞</text>
     <line
        x1="112"
        x2="120"
@@ -723,12 +723,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line83" />
-    <!-- –3dB -->
+    <!-- -3dB -->
     <text
        x="107"
        y="308"
        alignment-baseline="middle"
-       id="text83">–3 dB</text>
+       id="text83">-3 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -737,12 +737,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line84" />
-    <!-- –8dB -->
+    <!-- -8dB -->
     <text
        x="107"
        y="392"
        alignment-baseline="middle"
-       id="text84">–8 dB</text>
+       id="text84">-8 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -751,12 +751,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line85" />
-    <!-- –14dB -->
+    <!-- -14dB -->
     <text
        x="107"
        y="496"
        alignment-baseline="middle"
-       id="text85">–14 dB</text>
+       id="text85">-14 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -765,12 +765,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line86" />
-    <!-- –18dB -->
+    <!-- -18dB -->
     <text
        x="107"
        y="560"
        alignment-baseline="middle"
-       id="text86">–18 dB</text>
+       id="text86">-18 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -779,12 +779,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line87" />
-    <!-- –20dB -->
+    <!-- -20dB -->
     <text
        x="107"
        y="592"
        alignment-baseline="middle"
-       id="text87">–20 dB</text>
+       id="text87">-20 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -793,12 +793,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line88" />
-    <!-- –30dB -->
+    <!-- -30dB -->
     <text
        x="107"
        y="752"
        alignment-baseline="middle"
-       id="text88">–30 dB</text>
+       id="text88">-30 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -807,12 +807,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line89" />
-    <!-- –40dB -->
+    <!-- -40dB -->
     <text
        x="107"
        y="888"
        alignment-baseline="middle"
-       id="text89">–40 dB</text>
+       id="text89">-40 dB</text>
     <line
        x1="120"
        x2="1342"
@@ -821,12 +821,12 @@
        stroke="#ffea80"
        stroke-dasharray="4,4"
        id="line90" />
-    <!-- –∞ -->
+    <!-- -∞ -->
     <text
        x="107"
        y="992"
        alignment-baseline="middle"
-       id="text90">–∞</text>
+       id="text90">-∞</text>
     <line
        x1="120"
        x2="1342"
@@ -1041,25 +1041,64 @@
        stroke="#fff"
        fill="url(#spectrumGrad)"
        id="rect128" />
-    <!-- Rectangle DIFF L -->
+    <!-- Phase DIFF L -->
     <rect
        x="1482"
        y="164"
        width="56"
-       height="22"
+       height="11"
+       fill="url(#gradLeft)"
+       stroke="#fff"
+       id="rect129" />
+    <!-- Phase DIFF R -->
+    <rect
+       x="1538"
+       y="164"
+       width="56"
+       height="11"
+       fill="url(#gradRight)"
+       stroke="#fff"
+       id="rect130" />
+    <!-- Rectangle DIFF L -->
+    <rect
+       x="1482"
+       y="175"
+       width="56"
+       height="11"
        fill="url(#gradLeft)"
        stroke="#fff"
        id="rect129" />
     <!-- Rectangle DIFF R -->
     <rect
        x="1538"
-       y="164"
+       y="175"
        width="56"
-       height="22"
+       height="11"
        fill="url(#gradRight)"
        stroke="#fff"
        id="rect130" />
+    <!-- Rectangle Oscilo L-->
+    <rect
+       x="670"
+       y="30"
+       width="672"
+       height="45"
+       fill="url(#gradRight)"
+       stroke="url(#gradRight)"
+       id="rect130" />
+    <!-- Rectangle Oscilo R-->
+    <rect
+       x="670"
+       y="75"
+       width="672"
+       height="45"
+       fill="url(#gradRight)"
+       stroke="url(#gradRight)"
+       id="rect130" />
   </g>
+  
+  
+  
   <!-- Labels Vumètre L/R -->
   <g
      font-family="'DejaVu Sans Mono'"
@@ -1142,7 +1181,7 @@
        x="1470"
        y="308"
        alignment-baseline="middle"
-       id="text136">–3 dB</text>
+       id="text136">-3 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1154,7 +1193,7 @@
        x="1470"
        y="392"
        alignment-baseline="middle"
-       id="text137">–8 dB</text>
+       id="text137">-8 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1166,7 +1205,7 @@
        x="1470"
        y="496"
        alignment-baseline="middle"
-       id="text138">–14 dB</text>
+       id="text138">-14 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1178,7 +1217,7 @@
        x="1470"
        y="560"
        alignment-baseline="middle"
-       id="text139">–18 dB</text>
+       id="text139">-18 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1190,7 +1229,7 @@
        x="1470"
        y="592"
        alignment-baseline="middle"
-       id="text140">–20 dB</text>
+       id="text140">-20 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1202,7 +1241,7 @@
        x="1470"
        y="752"
        alignment-baseline="middle"
-       id="text141">–30 dB</text>
+       id="text141">-30 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1214,7 +1253,7 @@
        x="1470"
        y="888"
        alignment-baseline="middle"
-       id="text142">–40 dB</text>
+       id="text142">-40 dB</text>
     <line
        x1="1475"
        x2="1483"
@@ -1226,7 +1265,7 @@
        x="1470"
        y="992"
        alignment-baseline="middle"
-       id="text143">–∞</text>
+       id="text143">-∞</text>
     <line
        x1="1475"
        x2="1483"
@@ -1290,7 +1329,7 @@
        x="1606"
        y="308"
        alignment-baseline="middle"
-       id="text147">–3 dB</text>
+       id="text147">-3 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1302,7 +1341,7 @@
        x="1606"
        y="392"
        alignment-baseline="middle"
-       id="text148">–8 dB</text>
+       id="text148">-8 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1314,7 +1353,7 @@
        x="1606"
        y="496"
        alignment-baseline="middle"
-       id="text149">–14 dB</text>
+       id="text149">-14 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1326,7 +1365,7 @@
        x="1606"
        y="560"
        alignment-baseline="middle"
-       id="text150">–18 dB</text>
+       id="text150">-18 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1338,7 +1377,7 @@
        x="1606"
        y="592"
        alignment-baseline="middle"
-       id="text151">–20 dB</text>
+       id="text151">-20 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1350,7 +1389,7 @@
        x="1606"
        y="752"
        alignment-baseline="middle"
-       id="text152">–30 dB</text>
+       id="text152">-30 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1362,7 +1401,7 @@
        x="1606"
        y="888"
        alignment-baseline="middle"
-       id="text153">–40 dB</text>
+       id="text153">-40 dB</text>
     <line
        x1="1601"
        x2="1593"
@@ -1374,7 +1413,7 @@
        x="1606"
        y="992"
        alignment-baseline="middle"
-       id="text154">–∞</text>
+       id="text154">-∞</text>
     <line
        x1="1601"
        x2="1593"
@@ -1433,4 +1472,25 @@
      id="text156">
   VibeScope
 </text>
+  <!-- ───────────────────  PHASE (ρ)  ─────────────────── -->
+  <g id="phaseLegend" font-family="'DejaVu Sans Mono'"
+     font-size="10px" fill="#cccccc" text-anchor="middle">
+
+    <!-- repères numériques -1 · 0 · +1 -->
+    <text x="1483" y="172" text-anchor="start">-ϱ</text>
+    <text x="1593" y="172" text-anchor="end">+ϱ</text>
+
+  </g>
+
+  <!-- ────────────────  BALANCE L / R (diff)  ──────────────── -->
+  <g id="balanceLegend" font-family="'DejaVu Sans Mono'"
+     font-size="10px" fill="#cccccc" text-anchor="middle">
+
+    <!-- flèche + L à gauche -->
+    <text x="1493" y="184">◀&#x2009;L</text>
+
+    <!-- R + flèche à droite -->
+    <text x="1583" y="184">R&#x2009;▶</text>
+  </g>
+
 </svg>
