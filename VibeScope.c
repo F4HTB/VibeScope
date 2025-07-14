@@ -135,6 +135,9 @@ const int lsr_diffLR_bar_y   = 175,  lsr_diffLR_bar_h   = 11;
 const int lsr_phaseLR_bar_x = 1482, lsr_phaseLR_bar_y = 164;
 const int lsr_phaseLR_bar_w = 112,  lsr_phaseLR_bar_h = 11;
 
+/* ===============   Hardware  ============================ */
+static float attenuator_db = 0;
+
 /* ===============   OSCILLO L / R  ============================ */
 const int osc_L_x = 670, osc_L_y = 30;     /* cadre haut (L)  – SVG */
 const int osc_R_x = 670, osc_R_y = 75;     /* cadre bas  (R)  – SVG */
@@ -340,7 +343,7 @@ void draw_spectrogram_bars(SDL_Renderer *ren, const float *spectro_band_db) {
 
 // -- Calcul hauteur remplie pour barres RMS ou Peak (en pixels) --
 int calc_filled_height(float val) {
-    float val_db = 20.0f * log10f(fmaxf(val, 1e-5f));
+    float val_db = 20.0f * log10f(fmaxf(val, 1e-5f)) + attenuator_db;
     int y_pos = db_to_y(val_db);
     int filled_h = 0;
     if (y_pos < lsr_bar_y) {
@@ -804,7 +807,7 @@ void* fft_thread_func(void *arg) {
             for (int i = bin_start; i <= bin_end; i++) sum += mag[i];
             float avg = (n_bins > 0) ? (sum / n_bins) : 1e-20f;
             float avg_norm = avg / spectro_ref_val[c];
-            float db = 20.0f * log10f(avg_norm + 1e-20f);
+            float db = 20.0f * log10f(avg_norm + 1e-20f) + attenuator_db;
             spectro_band_db[c] = db;
         }
 
@@ -996,6 +999,7 @@ void print_help(const char *progname) {
     printf("Usage: %s [options]\n", progname);
     printf("Options disponibles :\n");
     printf("  -D <device>                 : Périphérique ALSA d'acquisition audio (défaut : 'default')\n");
+	printf("  -AD <attenuator_db>         : Compensation atténuateur dB (ex : 9 pour +9 dB)\n");
     printf("  -CS                         : Active la calibration du spectrogramme\n");
     printf("     Utilisation :\n");
     printf("       freqs=(20 25 31.5 40 50 63 80 100 125 160 200 250 315 400 500 630 800 1000 1250 1600 2000 2500 3150 4000 5000 6300 8000 10000 12500 16000 20000)\n");
@@ -1043,6 +1047,9 @@ int main(int argc, char *argv[]) {
             lsr_tau_peak_release = atof(argv[++i]);
             if (lsr_tau_peak_release < 0.01f) lsr_tau_peak_release = 0.01f;
         }
+		else if (strcmp(argv[i], "-AD") == 0 && i + 1 < argc) {
+			attenuator_db = atof(argv[++i]);
+		}
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             print_help(argv[0]);
             return 0;
