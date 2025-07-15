@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
+#include <sched.h>
 
 // ==================== FFT =============================
 
@@ -77,6 +78,9 @@ const float spectro_band_edges[NUM_COLS+1] = {
     3548.13, 4472.14, 5612.49, 7071.07, 8944.27, 11180.34,
     14142.14, 17888.54, 22400.00
  };
+ 
+static int spectro_bin_start[NUM_COLS] = {0};
+static int spectro_bin_end[NUM_COLS]   = {0};
 
 // Calibration "spectrale" (modifiable à l'exécution, sauvegardée)
 // Normalise la réponse par bande (utilisé pour compenser la fenêtre, le micro, etc.)
@@ -100,6 +104,8 @@ const int spectro_bar_x[NUM_COLS] = {     120,160,200,240,280,320,360,400,440,48
 const int spectro_bar_y = 192;
 const int spectro_bar_w = 22;
 const int spectro_bar_h = 800;
+
+static short spectro_block_stereo[FFT_SIZE * 2];
 
 // ==================== LSR (LEFT/SIDE/RIGHT) ================
 
@@ -766,7 +772,7 @@ void audio_update_levels(snd_pcm_t *handle, float *lsr_rms, float *lsr_balance) 
 
 // -- Thread FFT : calcul de la FFT et calibration spectre --
 void* fft_thread_func(void *arg) {
-    short block_stereo[FFT_SIZE * 2];
+    // short block_stereo[FFT_SIZE * 2];
     static int last_band = -1;
     static float last_time = 0.0f;
     static int already_calibrated = -1;
@@ -780,14 +786,14 @@ void* fft_thread_func(void *arg) {
             pthread_mutex_unlock(&fft_mutex);
             break;
         }
-        memcpy(block_stereo, audio_fft_samples, sizeof(short) * 2 * FFT_SIZE);
+        memcpy(spectro_block_stereo, audio_fft_samples, sizeof(short) * 2 * FFT_SIZE);
         fft_block_ready = 0;
         pthread_mutex_unlock(&fft_mutex);
 
         // Conversion stéréo vers mono et application fenêtre Hann
         for (int i = 0; i < FFT_SIZE; i++) {
-            float L = block_stereo[2*i] / 32768.0f;
-            float R = block_stereo[2*i+1] / 32768.0f;
+            float L = spectro_block_stereo[2*i] / 32768.0f;
+            float R = spectro_block_stereo[2*i+1] / 32768.0f;
             fft_input[i] = 0.5f * (L + R) * fft_hann_window[i];
         }
         fftwf_execute_dft_r2c(fft_plan, fft_input, fft_output);
@@ -796,10 +802,12 @@ void* fft_thread_func(void *arg) {
 
         // Calcul niveaux moyens par bande de fréquence
         for (int c = 0; c < NUM_COLS; c++) {
-            float f_low  = spectro_band_edges[c];
-            float f_high = spectro_band_edges[c+1];
-            int bin_start = (int)ceilf(f_low / fft_freq_per_bin);
-            int bin_end   = (int)floorf(f_high / fft_freq_per_bin);
+            // float f_low  = spectro_band_edges[c];
+            // float f_high = spectro_band_edges[c+1];
+            // int bin_start = (int)ceilf(f_low / fft_freq_per_bin);
+            // int bin_end   = (int)floorf(f_high / fft_freq_per_bin);
+			int bin_start = spectro_bin_start[c];
+			int bin_end   = spectro_bin_end[c];
             if (bin_start < 0) bin_start = 0;
             if (bin_end > FFT_SIZE_b2) bin_end = FFT_SIZE_b2;
             float sum = 0.0f;
@@ -860,10 +868,12 @@ void* fft_thread_func(void *arg) {
             }
             if (best_band == last_band && max_db > threshold_db &&
                 (cur_time - last_time > 1.0) && already_calibrated != best_band) {
-                float f_low  = spectro_band_edges[best_band];
-                float f_high = spectro_band_edges[best_band+1];
-                int bin_start = (int)ceilf(f_low / fft_freq_per_bin);
-                int bin_end   = (int)floorf(f_high / fft_freq_per_bin);
+                // float f_low  = spectro_band_edges[best_band];
+                // float f_high = spectro_band_edges[best_band+1];
+                // int bin_start = (int)ceilf(f_low / fft_freq_per_bin);
+                // int bin_end   = (int)floorf(f_high / fft_freq_per_bin);
+				int bin_start = spectro_bin_start[best_band];
+				int bin_end   = spectro_bin_end[best_band];
                 float sum = 0.0f;
                 int n_bins = bin_end - bin_start + 1;
                 for (int i = bin_start; i <= bin_end; i++) sum += mag[i];
@@ -881,12 +891,24 @@ void* fft_thread_func(void *arg) {
                 already_calibrated = -1;
             }
         }
-        usleep(1000);
     }
     return NULL;
 }
 
+void set_realtime_priority(pthread_t thread) {
+    struct sched_param param;
+    param.sched_priority = 25; // Priorité temps réel élevée mais raisonnable
+    pthread_setschedparam(thread, SCHED_FIFO, &param);
+}
 
+void precompute_spectro_bins() {
+    for (int c = 0; c < NUM_COLS; c++) {
+        spectro_bin_start[c] = (int)ceilf(spectro_band_edges[c] / fft_freq_per_bin);
+        spectro_bin_end[c]   = (int)floorf(spectro_band_edges[c+1] / fft_freq_per_bin);
+        if (spectro_bin_start[c] < 0) spectro_bin_start[c] = 0;
+        if (spectro_bin_end[c] > FFT_SIZE_b2) spectro_bin_end[c] = FFT_SIZE_b2;
+    }
+}
 
 // -- Sauvegarde des calibrations dans cal.msr --
 void save_calibration_file() {
@@ -1064,7 +1086,7 @@ int main(int argc, char *argv[]) {
 	
     fft_plan = create_fftwf_plan_with_wisdom(FFT_SIZE, fft_input, fft_output);
     init_hann_window();
-    
+    precompute_spectro_bins();
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -1109,6 +1131,7 @@ int main(int argc, char *argv[]) {
 
     pthread_t fft_thread;
     pthread_create(&fft_thread, NULL, fft_thread_func, NULL);
+	set_realtime_priority(fft_thread);
 
     signal(SIGINT, handle_sigint);
 
