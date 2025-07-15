@@ -33,10 +33,10 @@ float fft_hann_window[FFT_SIZE];
 fftwf_plan fft_plan;
 
 // Buffer d'entrée (mono) pour la FFT
-float fft_input[FFT_SIZE];
+float *fft_input = NULL;
 
 // Buffer de sortie complexe (spectre fréquence)
-fftwf_complex fft_output[FFT_SIZE_b2];
+fftwf_complex *fft_output = NULL;
 
 // Mutex & condition : synchronisation thread audio/FFT
 pthread_mutex_t fft_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -169,12 +169,18 @@ Color ui_gradient_stops[8] = {
     {0, 0, 0},      {0, 0, 128},    {0, 0, 255},    {0, 128, 0},
     {0, 255, 0},    {255, 255, 0},  {255, 128, 0},  {255, 0, 0}
 };
-static SDL_Texture *ui_gradient_texture = NULL; // Texture verticale du gradient
+static SDL_Texture *ui_gradient_texture = NULL; // Texture verticale du gradient LSR
+static SDL_Texture *ui_gradient_spectro_bar_texture = NULL; // Texture verticale du gradient spectro
 Color ui_gradient_LUT[800];                    // Lookup-table gradient en RAM
+
+static SDL_Texture *ui_gradient_balance_left_texture = NULL;  // horizontal gauche
+static SDL_Texture *ui_gradient_balance_right_texture = NULL; // horizontal droite
 
 // Position/tailles graphiques pour cercles indicateurs (niveau, clipping)
 const int ui_circle_cy     = 172;
 const int ui_circle_radius = 11;
+
+SDL_Texture* circleTexture = NULL;
 
 // ==================== APP =============================
 
@@ -189,7 +195,7 @@ SDL_Texture *loadPngFromMemory(SDL_Renderer *renderer);
 Color getGradientColor(float v);
 int circle_cx(int i);
 void getCircleColor(float v, Uint8 *r, Uint8 *g, Uint8 *b);
-void drawFilledCircle(SDL_Renderer *renderer, int x0, int y0, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+void drawCircleFast(SDL_Renderer* ren, int x, int y, Uint8 r, Uint8 g, Uint8 b);
 void getGradLeftColor(float t, Uint8 *r, Uint8 *g, Uint8 *b);
 void getGradRightColor(float t, Uint8 *r, Uint8 *g, Uint8 *b);
 void draw_spectrogram_bars(SDL_Renderer *ren, const float *spectro_band_db);
@@ -258,14 +264,10 @@ void getCircleColor(float v, Uint8 *r, Uint8 *g, Uint8 *b) {
 }
 
 // -- Dessine un cercle plein (pour indicateurs) --
-void drawFilledCircle(SDL_Renderer *renderer, int x0, int y0, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    SDL_SetRenderDrawColor(renderer, r, g, b, a);
-    for (int y = -radius; y <= radius; y++) {
-        for (int x = -radius; x <= radius; x++) {
-            if (x*x + y*y <= radius*radius)
-                SDL_RenderDrawPoint(renderer, x0 + x, y0 + y);
-        }
-    }
+void drawCircleFast(SDL_Renderer* ren, int x, int y, Uint8 r, Uint8 g, Uint8 b) {
+    SDL_Rect dst = {x - ui_circle_radius, y - ui_circle_radius, 2*ui_circle_radius, 2*ui_circle_radius};
+    SDL_SetTextureColorMod(circleTexture, r, g, b);
+    SDL_RenderCopy(ren, circleTexture, NULL, &dst);
 }
 
 // -- Dégradé pour barre balance gauche --
@@ -314,19 +316,17 @@ int db_to_y(float db) {
 // -- Dessine les barres du spectrogramme --
 void draw_spectrogram_bars(SDL_Renderer *ren, const float *spectro_band_db) {
     for (int i = 0; i < NUM_COLS; ++i) {
-        SDL_Rect rc = {spectro_bar_x[i], spectro_bar_y, spectro_bar_w, spectro_bar_h};
-        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-        SDL_RenderDrawRect(ren, &rc);
 
         int y_head = db_to_y(spectro_band_db[i]);
         int y_bottom = spectro_bar_y + spectro_bar_h - 1;
         // Remplissage du bas vers le haut jusqu'à y_head
         int filled_h = (spectro_bar_y + spectro_bar_h) - y_head;
-        if (filled_h > 0) {
-            SDL_Rect src = {0, 0, 1, filled_h}; // on prend le haut (0…filled_h-1)
-            SDL_Rect dst = {spectro_bar_x[i] + 1, y_head, spectro_bar_w - 2, filled_h};
-            SDL_RenderCopyEx(ren, ui_gradient_texture, &src, &dst, 0.0, NULL, SDL_FLIP_VERTICAL);
-        }
+		if (filled_h > 0) {
+			// On prend la partie basse de la texture (correct)
+			SDL_Rect src = {0, spectro_bar_h - filled_h, spectro_bar_w, filled_h};
+			SDL_Rect dst = {spectro_bar_x[i], y_head, spectro_bar_w, filled_h};
+			SDL_RenderCopy(ren, ui_gradient_spectro_bar_texture, &src, &dst);
+		}
 
         // Ligne du peak hold (petit trait blanc semi-transparent)
         int y_peak = db_to_y(spectro_peak_hold[i]);
@@ -342,7 +342,7 @@ void draw_spectrogram_bars(SDL_Renderer *ren, const float *spectro_band_db) {
         getCircleColor(v, &r, &g, &b);
         int cx = circle_cx(i);
         int cy = ui_circle_cy;
-        drawFilledCircle(ren, cx, cy, ui_circle_radius, r, g, b, 255);
+		drawCircleFast(ren, cx, cy, r, g, b);
     }
 }
 
@@ -371,35 +371,29 @@ void draw_lr_bars(SDL_Renderer *ren,
                   const float *peak_values)
 {
     for (int i = 0; i < 3; ++i) {
-        /* Cadre blanc */
-        SDL_Rect rc = { lsr_bar_x[i], lsr_bar_y, lsr_bar_w[i], lsr_bar_h };
-        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-        SDL_RenderDrawRect(ren, &rc);
 
         /* ------------------ RMS plein ------------------ */
         int filled = calc_filled_height(rms_values[i]);
         if (filled) {
-            SDL_Rect src = { 0, 0, 1, filled };           /* bas de la texture */
+            SDL_Rect src = {0, spectro_bar_h - filled, 1, filled};           /* bas de la texture */
             SDL_Rect dst = { lsr_bar_x[i] + 1,
                              lsr_bar_y + lsr_bar_h - filled,
                              lsr_bar_w[i] - 2,
                              filled };
             SDL_SetTextureAlphaMod(ui_gradient_texture, 255);          /* opaque */
-            SDL_RenderCopyEx(ren, ui_gradient_texture, &src, &dst,
-                             0.0, NULL, SDL_FLIP_VERTICAL); /* noir en bas */
+            SDL_RenderCopy(ren, ui_gradient_texture, &src, &dst); /* noir en bas */
         }
 
         /* ------------------ Peak semi-transparent ------------------ */
         int filled_peak = calc_filled_height(peak_values[i]);
         if (filled_peak) {
-            SDL_Rect src = { 0, 0, 1, filled_peak };
+            SDL_Rect src = {0, spectro_bar_h - filled_peak, 1, filled_peak};
             SDL_Rect dst = { lsr_bar_x[i] + 1,
                              lsr_bar_y + lsr_bar_h - filled_peak,
                              lsr_bar_w[i] - 2,
                              filled_peak };
             SDL_SetTextureAlphaMod(ui_gradient_texture, 128);          /* 50 % */
-            SDL_RenderCopyEx(ren, ui_gradient_texture, &src, &dst,
-                             0.0, NULL, SDL_FLIP_VERTICAL);
+            SDL_RenderCopy(ren, ui_gradient_texture, &src, &dst);
         }
     }
     /* Remise de l’opacité pour la suite (spectrogramme) */
@@ -412,27 +406,25 @@ void draw_balance_bar(SDL_Renderer *ren, float value) {
     if (value < -1.0f) value = -1.0f;
     if (value >  1.0f) value =  1.0f;
 
-    if (value < 0.0f) {
+    if (value < 0.0f && ui_gradient_balance_left_texture) {
         int fill = (int)(lsr_diffLR_left_w * (-value));
-        for (int dx = 0; dx < fill; ++dx) {
-            float t = (lsr_diffLR_left_w - 1 - dx) / (float)(lsr_diffLR_left_w - 1);
-            Uint8 r, g, b;
-            getGradLeftColor(t, &r, &g, &b);
-            SDL_SetRenderDrawColor(ren, r, g, b, 255);
-            SDL_RenderDrawLine(ren, lsr_diffLR_left_x + (lsr_diffLR_left_w - 1 - dx), lsr_diffLR_bar_y, lsr_diffLR_left_x + (lsr_diffLR_left_w - 1 - dx), lsr_diffLR_bar_y + lsr_diffLR_bar_h - 1);
+        if (fill > 0) {
+            SDL_Rect src = { lsr_diffLR_left_w - fill, 0, fill, lsr_diffLR_bar_h };
+            SDL_Rect dst = { lsr_diffLR_left_x + (lsr_diffLR_left_w - fill), lsr_diffLR_bar_y, fill, lsr_diffLR_bar_h };
+            SDL_RenderCopy(ren, ui_gradient_balance_left_texture, &src, &dst);
         }
     }
-    else if (value > 0.0f) {
+    else if (value > 0.0f && ui_gradient_balance_right_texture) {
         int fill = (int)(lsr_diffLR_right_w * value);
-        for (int dx = 0; dx < fill; ++dx) {
-            float t = dx / (float)(lsr_diffLR_right_w - 1);
-            Uint8 r, g, b;
-            getGradRightColor(t, &r, &g, &b);
-            SDL_SetRenderDrawColor(ren, r, g, b, 255);
-            SDL_RenderDrawLine(ren, lsr_diffLR_right_x + dx, lsr_diffLR_bar_y, lsr_diffLR_right_x + dx, lsr_diffLR_bar_y + lsr_diffLR_bar_h - 1);
+        if (fill > 0) {
+            SDL_Rect src = { 0, 0, fill, lsr_diffLR_bar_h };
+            SDL_Rect dst = { lsr_diffLR_right_x, lsr_diffLR_bar_y, fill, lsr_diffLR_bar_h };
+            SDL_RenderCopy(ren, ui_gradient_balance_right_texture, &src, &dst);
         }
     }
+    // Si value == 0.0f, rien à dessiner
 }
+
 
 /* === Barre de corrélation –1 … +1 ====================== */
 void draw_phase_bar(SDL_Renderer *ren, float rho)
@@ -509,31 +501,108 @@ void init_hann_window() {
 // --- Création du LUT EN MÉMOIRE + texture GPU en même temps ---
 void init_gradient_texture(SDL_Renderer *ren)
 {
-    // 1. Surface RGBA 1 x spectro_bar_h
+	
+	// --- 0. Texture verticale fine 1xN pour LSR ---
     SDL_Surface *surf = SDL_CreateRGBSurfaceWithFormat(
         0, 1, spectro_bar_h, 32, SDL_PIXELFORMAT_RGBA8888);
     if (!surf) {
         fprintf(stderr, "SDL_CreateRGBSurface error: %s\n", SDL_GetError());
         exit(1);
     }
-
     Uint32 *pix = (Uint32 *)surf->pixels;
     for (int dy = 0; dy < spectro_bar_h; ++dy) {
-        float val = (float)dy / (spectro_bar_h - 1);
-        Color c = getGradientColor(val);          // ta table 8 couleurs
+        float val = 1.0f - (float)dy / (spectro_bar_h - 1);
+        Color c = getGradientColor(val);
         pix[dy] = SDL_MapRGBA(surf->format, c.r, c.g, c.b, 255);
-        ui_gradient_LUT[dy] = c;                      // ← garde aussi le LUT si d’autres fonctions l’utilisent
+        ui_gradient_LUT[dy] = c;
     }
-
-    // 2. Texture GPU
     ui_gradient_texture = SDL_CreateTextureFromSurface(ren, surf);
     SDL_FreeSurface(surf);
     if (!ui_gradient_texture) {
         fprintf(stderr, "SDL_CreateTextureFromSurface error: %s\n", SDL_GetError());
         exit(1);
     }
-    SDL_SetTextureBlendMode(ui_gradient_texture, SDL_BLENDMODE_BLEND);  // autorise alpha pour le peak
+    SDL_SetTextureBlendMode(ui_gradient_texture, SDL_BLENDMODE_BLEND);
+
+	
+    // --- 1. Texture barre verticale GRADIENT complet (spectro) ---
+    SDL_Surface *surf_bar = SDL_CreateRGBSurfaceWithFormat(
+        0, spectro_bar_w, spectro_bar_h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (!surf_bar) {
+        fprintf(stderr, "SDL_CreateRGBSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    // Remplissage gradient pour chaque pixel (largeur = spectro_bar_w)
+    for (int dy = 0; dy < spectro_bar_h; ++dy) {
+        float val = 1.0f - (float)dy / (spectro_bar_h - 1);
+        Color c = getGradientColor(val);
+        Uint32 color = SDL_MapRGBA(surf_bar->format, c.r, c.g, c.b, 255);
+        for (int x = 0; x < spectro_bar_w; ++x) {
+            ((Uint32*)surf_bar->pixels)[dy * spectro_bar_w + x] = color;
+        }
+        ui_gradient_LUT[dy] = c; // Si tu utilises encore ce LUT ailleurs
+    }
+
+    ui_gradient_spectro_bar_texture = SDL_CreateTextureFromSurface(ren, surf_bar);
+    SDL_FreeSurface(surf_bar);
+    if (!ui_gradient_spectro_bar_texture) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetTextureBlendMode(ui_gradient_spectro_bar_texture, SDL_BLENDMODE_BLEND);
+
+    // --- 2. Gradient horizontal gauche (balance) ---
+    SDL_Surface *surf_hL = SDL_CreateRGBSurfaceWithFormat(
+        0, lsr_diffLR_left_w, lsr_diffLR_bar_h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (!surf_hL) {
+        fprintf(stderr, "SDL_CreateRGBSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    Uint32 *pix_hL = (Uint32 *)surf_hL->pixels;
+    for (int x = 0; x < lsr_diffLR_left_w; ++x) {
+        float t = (lsr_diffLR_left_w - 1 - x) / (float)(lsr_diffLR_left_w - 1);
+        Uint8 r, g, b;
+        getGradLeftColor(t, &r, &g, &b);
+        for (int y = 0; y < lsr_diffLR_bar_h; ++y) {
+            pix_hL[y * lsr_diffLR_left_w + x] = SDL_MapRGBA(surf_hL->format, r, g, b, 255);
+        }
+    }
+    ui_gradient_balance_left_texture = SDL_CreateTextureFromSurface(ren, surf_hL);
+    SDL_FreeSurface(surf_hL);
+    if (!ui_gradient_balance_left_texture) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetTextureBlendMode(ui_gradient_balance_left_texture, SDL_BLENDMODE_BLEND);
+
+    // --- 3. Gradient horizontal droite (balance) ---
+    SDL_Surface *surf_hR = SDL_CreateRGBSurfaceWithFormat(
+        0, lsr_diffLR_right_w, lsr_diffLR_bar_h, 32, SDL_PIXELFORMAT_RGBA8888);
+    if (!surf_hR) {
+        fprintf(stderr, "SDL_CreateRGBSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    Uint32 *pix_hR = (Uint32 *)surf_hR->pixels;
+    for (int x = 0; x < lsr_diffLR_right_w; ++x) {
+        float t = x / (float)(lsr_diffLR_right_w - 1);
+        Uint8 r, g, b;
+        getGradRightColor(t, &r, &g, &b);
+        for (int y = 0; y < lsr_diffLR_bar_h; ++y) {
+            pix_hR[y * lsr_diffLR_right_w + x] = SDL_MapRGBA(surf_hR->format, r, g, b, 255);
+        }
+    }
+    ui_gradient_balance_right_texture = SDL_CreateTextureFromSurface(ren, surf_hR);
+    SDL_FreeSurface(surf_hR);
+    if (!ui_gradient_balance_right_texture) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface error: %s\n", SDL_GetError());
+        exit(1);
+    }
+    SDL_SetTextureBlendMode(ui_gradient_balance_right_texture, SDL_BLENDMODE_BLEND);
 }
+
+
+
 
 
 // -- Initialisation ALSA capture (input audio) --
@@ -595,6 +664,15 @@ fail:
     return NULL;
 }
 
+// -- Thread audio --
+void* audio_thread_func(void* arg) {
+    snd_pcm_t *alsa_handle = (snd_pcm_t*)arg;
+    while (app_running) {
+        audio_update_levels(alsa_handle, lsr_rms, &lsr_balance);
+    }
+    return NULL;
+}
+
 // -- Mise à jour des niveaux audio RMS, Peak et balance --
 void audio_update_levels(snd_pcm_t *handle, float *lsr_rms, float *lsr_balance) {
     static float smoothed_rms_l = 0.0f;
@@ -607,7 +685,7 @@ void audio_update_levels(snd_pcm_t *handle, float *lsr_rms, float *lsr_balance) 
     static float stable_rms_r = 0.0f;
     static float stable_since = 0.0f;
 
-    short buffer[HOP_SIZE * 2];
+    static short buffer[HOP_SIZE * 2];
     int nframes;
 
     while (1) {
@@ -777,11 +855,28 @@ void* fft_thread_func(void *arg) {
     static float last_time = 0.0f;
     static int already_calibrated = -1;
     static float last_peak_update_time = 0.0f;
-
+	static struct timespec ts;
+	
     while (app_running) {
         pthread_mutex_lock(&fft_mutex);
-        while (!fft_block_ready && app_running)
-            pthread_cond_wait(&fft_cond, &fft_mutex);
+        // while (!fft_block_ready && app_running)pthread_cond_wait(&fft_cond, &fft_mutex);
+		while (!fft_block_ready && app_running) {
+			clock_gettime(CLOCK_REALTIME, &ts);
+			ts.tv_sec += 0;
+			ts.tv_nsec += 100 * 1000000; // +100 ms
+
+			// Normalisation si nanosecondes > 1s
+			if (ts.tv_nsec >= 1000000000L) {
+				ts.tv_sec += 1;
+				ts.tv_nsec -= 1000000000L;
+			}
+
+			int rc = pthread_cond_timedwait(&fft_cond, &fft_mutex, &ts);
+			if (rc == ETIMEDOUT) {
+				// Timeout : possible bug, continuer ou logguer
+				continue;  // ou break; si vous voulez forcer une sortie
+			}
+		}
         if (!app_running) {
             pthread_mutex_unlock(&fft_mutex);
             break;
@@ -908,6 +1003,28 @@ void precompute_spectro_bins() {
         if (spectro_bin_start[c] < 0) spectro_bin_start[c] = 0;
         if (spectro_bin_end[c] > FFT_SIZE_b2) spectro_bin_end[c] = FFT_SIZE_b2;
     }
+}
+
+// Génère un cercle plein une seule fois
+void generateCircleTexture(SDL_Renderer* renderer, int radius) {
+    int diam = radius * 2;
+    SDL_Surface* surf = SDL_CreateRGBSurfaceWithFormat(0, diam, diam, 32, SDL_PIXELFORMAT_RGBA8888);
+    SDL_SetSurfaceBlendMode(surf, SDL_BLENDMODE_BLEND);
+
+    Uint32* pixels = (Uint32*)surf->pixels;
+    int center = radius;
+    for (int y = 0; y < diam; ++y) {
+        for (int x = 0; x < diam; ++x) {
+            int dx = x - center;
+            int dy = y - center;
+            if (dx*dx + dy*dy <= radius*radius)
+                pixels[y * diam + x] = SDL_MapRGBA(surf->format, 255, 255, 255, 255);
+            else
+                pixels[y * diam + x] = SDL_MapRGBA(surf->format, 0, 0, 0, 0);
+        }
+    }
+    circleTexture = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
 }
 
 // -- Sauvegarde des calibrations dans cal.msr --
@@ -1083,7 +1200,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
-	
+
+	fft_input = fftwf_alloc_real(FFT_SIZE);
+	fft_output = fftwf_alloc_complex(FFT_SIZE_b2);
+	if (!fft_input || !fft_output) {
+		fprintf(stderr, "Erreur d'allocation mémoire FFTW !\n");
+		exit(1);
+	}
     fft_plan = create_fftwf_plan_with_wisdom(FFT_SIZE, fft_input, fft_output);
     init_hann_window();
     precompute_spectro_bins();
@@ -1099,12 +1222,11 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    SDL_Window *win = SDL_CreateWindow("Audio Analyser",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1920, 1080, SDL_WINDOW_SHOWN);
+    SDL_Window *win = SDL_CreateWindow("Audio Analyser", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, SDL_WINDOW_SHOWN);
     SDL_SetWindowFullscreen(win, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
 	init_gradient_texture(ren);
+	generateCircleTexture(ren, ui_circle_radius);
 
     SDL_Texture *bg = loadPngFromMemory(ren);
     if (!bg) {
@@ -1128,6 +1250,10 @@ int main(int argc, char *argv[]) {
     if (load_calibration_file() == 0) {
         printf("Calibration file loaded successfully.\n");
     }
+	
+    pthread_t audio_thread;
+    pthread_create(&audio_thread, NULL, audio_thread_func, alsa_handle);
+	set_realtime_priority(audio_thread);
 
     pthread_t fft_thread;
     pthread_create(&fft_thread, NULL, fft_thread_func, NULL);
@@ -1135,29 +1261,46 @@ int main(int argc, char *argv[]) {
 
     signal(SIGINT, handle_sigint);
 
-    while (app_running) {
-        audio_update_levels(alsa_handle, lsr_rms, &lsr_balance);
+	Uint32 lastTime = SDL_GetTicks();
+	const Uint32 frameDelay = 24; // ~16 ms → ~60 FPS
 
-        SDL_RenderClear(ren);
-        SDL_RenderCopy(ren, bg, NULL, NULL);
+	while (app_running) {
+		Uint32 now = SDL_GetTicks();
+		if (now - lastTime < frameDelay) {
+			SDL_Delay(frameDelay - (now - lastTime));
+			continue;
+		}
+		lastTime += frameDelay;
 
-        draw_spectrogram_bars(ren, spectro_band_db);
-        draw_lr_bars(ren, lsr_rms, lsr_peak);
-        draw_balance_bar(ren, lsr_balance);
+		SDL_RenderClear(ren);
+		SDL_RenderCopy(ren, bg, NULL, NULL);
+
+		draw_spectrogram_bars(ren, spectro_band_db);
+		draw_lr_bars(ren, lsr_rms, lsr_peak);
+		draw_balance_bar(ren, lsr_balance);
 		draw_phase_bar(ren, lsr_phase_rho_smoothed);
 		draw_oscilloscopes(ren, osc_buf);
 
-        SDL_RenderPresent(ren);
-        SDL_Delay(1);
-    }
+		SDL_RenderPresent(ren);
+	}
 
     app_running = 0;
-    pthread_cond_signal(&fft_cond);
+    
+	pthread_cond_signal(&fft_cond);
     pthread_join(fft_thread, NULL);
     fftwf_destroy_plan(fft_plan);
-
+	fftwf_free(fft_input);
+	fftwf_free(fft_output);
+ 
+    pthread_join(audio_thread, NULL);
     snd_pcm_close(alsa_handle);
+	
+	SDL_DestroyTexture(circleTexture);
     SDL_DestroyTexture(bg);
+	SDL_DestroyTexture(ui_gradient_texture);
+	SDL_DestroyTexture(ui_gradient_spectro_bar_texture);
+	SDL_DestroyTexture(ui_gradient_balance_left_texture);
+	SDL_DestroyTexture(ui_gradient_balance_right_texture);
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     IMG_Quit();
